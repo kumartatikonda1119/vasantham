@@ -10,7 +10,7 @@ const AksharaPage = () => {
         {/* Header */}
         <div className="text-center mb-10">
           <h1 className="font-serif text-3xl md:text-4xl font-bold text-[#3B6533] mb-2">
-            అక్షరార్థం (Akshara Ardham)
+            అక్షరార్థం (Word Meaning)
           </h1>
           <div className="h-[1px] w-24 bg-[#A08530]/40 mx-auto mt-4"></div>
         </div>
