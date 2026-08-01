@@ -118,7 +118,7 @@ const ShareCardModal = ({ item, type, onClose }) => {
             </div>
             <div className="text-right">
               <span className="font-sans font-semibold text-[#3B6533]">
-                vasantham.org
+                vasantham.onrender.com
               </span>
             </div>
           </div>
