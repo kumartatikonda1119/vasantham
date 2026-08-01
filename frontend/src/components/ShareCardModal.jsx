@@ -38,7 +38,7 @@ const ShareCardModal = ({ item, type, onClose }) => {
           try {
             await navigator.share({
               title: item.title || 'వసంతం సాహిత్యము',
-              text: item.title ? `"${item.title}" - వసంతం` : 'వసంతం సాహిత్యము',
+              text: (item.title ? `"${item.title}" - వసంతం` : 'వసంతం సాహిత్యము') + '\n\nమరిన్ని రచనల కోసం సందర్శించండి (For more writings, visit): https://vasantham.onrender.com',
               files: [file],
             });
             setIsGenerating(false);
