@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navLinks = [
     { name: 'హోమ్', path: '/' },
@@ -13,8 +15,8 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#F6EEDF]/95 backdrop-blur-md border-b border-[#E6D7BD] py-3 px-4 md:px-10">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
+    <nav className="sticky top-0 z-50 bg-[#F6EEDF]/95 backdrop-blur-md border-b border-[#E6D7BD]">
+      <div className="py-3 px-4 md:px-10 max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-1.5 group">
           <span className="font-serif text-2xl md:text-3xl font-bold text-[#3B6533] tracking-wide drop-shadow-sm">
@@ -61,12 +63,46 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu Toggle Button */}
-        <button className="md:hidden text-[#3B6533] p-1.5 focus:outline-none">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+        <button 
+          className="md:hidden text-[#3B6533] p-1.5 focus:outline-none"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        >
+          {isMenuOpen ? (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
         </button>
       </div>
+
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="md:hidden border-t border-[#E6D7BD] bg-[#F6EEDF]">
+          <div className="px-4 pt-2 pb-4 space-y-1 shadow-inner">
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-xl font-sans text-base font-medium transition-colors ${
+                    isActive
+                      ? 'bg-[#E6D7BD]/50 text-[#3B6533] font-semibold'
+                      : 'text-[#5C4328] hover:bg-[#E6D7BD]/30 hover:text-[#3B6533]'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
