@@ -65,8 +65,8 @@ const ShareCardModal = ({ item, type, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-[#F8F1E4] rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-[#E6D7BD] flex flex-col items-center gap-5 relative">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-8 overflow-y-auto">
+      <div className="my-auto bg-[#F8F1E4] rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-[#E6D7BD] flex flex-col items-center gap-5 relative shrink-0">
         
         {/* Close Button */}
         <button 
