@@ -28,11 +28,13 @@ const AksharaPage = () => {
                 </p>
               )}
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="flex flex-wrap justify-center gap-6">
                 {poem.lines.map((line, idx) => (
-                  <div key={idx} className="flex flex-col items-center text-center p-4 bg-white/50 rounded-2xl shadow-sm">
-                    <div className="w-16 h-16 rounded-2xl bg-[#3B6533] text-[#F5EBDC] font-serif text-3xl font-bold flex items-center justify-center mb-4 shadow-sm">
-                      {line.letter}
+                  <div key={idx} className="flex-1 min-w-[250px] flex flex-col items-center text-center p-4 bg-white/50 rounded-2xl shadow-sm">
+                    <div className="min-w-[4rem] min-h-[4rem] px-4 py-2 rounded-2xl bg-[#3B6533] text-[#F5EBDC] font-serif font-bold flex items-center justify-center mb-4 shadow-sm text-center">
+                      <span className={line.letter?.length > 4 ? "text-xl leading-snug" : "text-3xl"}>
+                        {line.letter}
+                      </span>
                     </div>
                     <p className="font-sans text-[#5C4328] font-medium leading-relaxed">
                       {line.text}
