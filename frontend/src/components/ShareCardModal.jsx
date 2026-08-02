@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import html2canvas from 'html2canvas';
 
 const ShareCardModal = ({ item, type, onClose }) => {
   const cardRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const hasTriggered = useRef(false);
 
   // Helper to extract clean text from rich HTML
   const getPlainText = (htmlOrText) => {
@@ -37,7 +38,7 @@ const ShareCardModal = ({ item, type, onClose }) => {
   };
 
   // Dedicated Download Action
-  const handleDownload = async () => {
+  const handleDownload = useCallback(async () => {
     if (isGenerating) return;
     setIsGenerating(true);
 
@@ -52,10 +53,10 @@ const ShareCardModal = ({ item, type, onClose }) => {
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [isGenerating, type]);
 
   // Share Action: ALWAYS downloads image to device FIRST, then opens native Web Share API
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     if (isGenerating) return;
     setIsGenerating(true);
 
@@ -76,8 +77,8 @@ const ShareCardModal = ({ item, type, onClose }) => {
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
-            title: item.title || 'వసంతం సాహిత్యము',
-            text: (item.title ? `"${item.title}" - వసంతం` : 'వసంతం సాహిత్యము') + '\n\nమరిన్ని రచనల కోసం సందర్శించండి: https://vasantham.onrender.com',
+            title: item?.title || 'వసంతం సాహిత్యము',
+            text: (item?.title ? `"${item.title}" - వసంతం` : 'వసంతం సాహిత్యము') + '\n\nమరిన్ని రచనల కోసం సందర్శించండి: https://vasantham.onrender.com',
             files: [file],
           });
         } catch (err) {
@@ -89,7 +90,24 @@ const ShareCardModal = ({ item, type, onClose }) => {
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [isGenerating, item?.title, type]);
+
+  // Auto-trigger action if provided (e.g. from direct button click on grid card)
+  useEffect(() => {
+    if (hasTriggered.current || !item?.action) return;
+    
+    // Slight delay to ensure DOM and fonts/images are fully rendered before capturing
+    const timer = setTimeout(() => {
+      hasTriggered.current = true;
+      if (item.action === 'download') {
+        handleDownload();
+      } else if (item.action === 'share') {
+        handleShare();
+      }
+    }, 600);
+    
+    return () => clearTimeout(timer);
+  }, [item?.action, handleDownload, handleShare]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-8 overflow-y-auto">

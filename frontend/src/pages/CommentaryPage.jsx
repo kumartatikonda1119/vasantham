@@ -37,20 +37,31 @@ const CommentaryPage = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mt-6 pt-4 border-t border-[#E6D7BD]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-6 pt-4 border-t border-[#E6D7BD] gap-4 sm:gap-0">
                 <span className="font-serif text-xs text-[#A08530] font-bold">
                   – {item.author || 'Geeta Vasanta Laxmi (వసంతం)'}
                 </span>
 
-                <button
-                  onClick={() => setShareItem({ ...item, content: item.content.join('\n') })}
-                  className="py-1.5 px-4 rounded-xl bg-[#3B6533] text-[#F5EBDC] text-xs font-semibold hover:bg-[#2F5228] transition-colors flex items-center gap-1.5 shadow-sm"
-                >
-                  <span>పంచుకోండి (Share)</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 9a3 3 0 100-2.684 3 3 0 000 2.684" />
-                  </svg>
-                </button>
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <button
+                    onClick={() => setShareItem({ ...item, content: item.content.join('\n'), action: 'download' })}
+                    className="py-1.5 px-3 rounded-xl border border-[#3B6533] text-[#3B6533] bg-[#EFE3C9]/60 hover:bg-[#EFE3C9] text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <span>డౌన్‌లోడ్</span>
+                  </button>
+                  <button
+                    onClick={() => setShareItem({ ...item, content: item.content.join('\n'), action: 'share' })}
+                    className="py-1.5 px-3 rounded-xl bg-[#3B6533] text-[#F5EBDC] text-xs font-semibold hover:bg-[#2F5228] transition-colors flex items-center gap-1.5 shadow-sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 9a3 3 0 100-2.684 3 3 0 000 2.684" />
+                    </svg>
+                    <span>పంచుకోండి</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))}
