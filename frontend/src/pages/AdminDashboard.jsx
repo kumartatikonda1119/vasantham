@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -16,14 +14,19 @@ const AdminDashboard = () => {
     writings: 0,
     quotes: 0,
     akshara: 0,
+    akshara: 0,
   });
   
   // Form State
   const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState(''); // Textarea content (newline separated)
   const [status, setStatus] = useState('published');
-  const [letter, setLetter] = useState('');
-  const [meaning, setMeaning] = useState('');
+  
+  // Akshara specific
+  const [description, setDescription] = useState('');
+  const [footerMessage, setFooterMessage] = useState('');
+  const [aksharaLines, setAksharaLines] = useState([{ letter: '', text: '' }]);
+  
 
   const navigate = useNavigate();
   const token = localStorage.getItem('vasantham_token');
@@ -93,18 +96,38 @@ const AdminDashboard = () => {
     setEditingItem(item);
     if (item) {
       setTitle(item.title || '');
-      setContent(item.content || item.text || item.description || '');
+      setContent(Array.isArray(item.content) ? item.content.join('\n') : (item.content || ''));
       setStatus(item.status || 'published');
-      setLetter(item.letter || '');
-      setMeaning(item.meaning || '');
+      
+      // Akshara
+      setDescription(item.description || '');
+      setFooterMessage(item.footerMessage || '');
+      setAksharaLines(item.lines || [{ letter: '', text: '' }]);
     } else {
       setTitle('');
       setContent('');
       setStatus('published');
-      setLetter('');
-      setMeaning('');
+      setDescription('');
+      setFooterMessage('');
+      setAksharaLines([{ letter: '', text: '' }]);
     }
     setShowModal(true);
+  };
+
+  const handleAddAksharaLine = () => {
+    setAksharaLines([...aksharaLines, { letter: '', text: '' }]);
+  };
+
+  const handleAksharaLineChange = (index, field, value) => {
+    const newLines = [...aksharaLines];
+    newLines[index][field] = value;
+    setAksharaLines(newLines);
+  };
+
+  const handleRemoveAksharaLine = (index) => {
+    const newLines = [...aksharaLines];
+    newLines.splice(index, 1);
+    setAksharaLines(newLines);
   };
 
   const handleSave = async (e) => {
@@ -115,11 +138,16 @@ const AdminDashboard = () => {
 
     const method = editingItem ? 'PUT' : 'POST';
 
-    const bodyData = activeTab === 'quotes'
-      ? { text: content, status }
-      : activeTab === 'akshara'
-      ? { letter, meaning, description: content, status }
-      : { title, content, status };
+    let bodyData = {};
+    if (activeTab === 'poems' || activeTab === 'writings' || activeTab === 'quotes') {
+      bodyData = { 
+        title, 
+        content: content.split('\n'), // split textarea into array of strings
+        status 
+      };
+    } else if (activeTab === 'akshara') {
+      bodyData = { title, description, footerMessage, lines: aksharaLines, status };
+    }
 
     try {
       const res = await fetch(endpoint, {
@@ -173,19 +201,9 @@ const AdminDashboard = () => {
     { id: 'dashboard', label: 'డ్యాష్‌బోర్డ్ (Dashboard)', icon: '📊' },
     { id: 'poems', label: 'కవితలు (Poems)', icon: '📜' },
     { id: 'writings', label: 'రచనలు (Writings)', icon: '✍️' },
-    { id: 'quotes', label: 'వ్యాఖ్యానాలు (Quotations)', icon: '💬' },
+    { id: 'quotes', label: 'వ్యాఖ్యానాలు (Commentary)', icon: '💬' },
     { id: 'akshara', label: 'అక్షరార్థం (Akshara Ardham)', icon: '🔤' },
   ];
-
-  const quillModules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'align': [] }],
-      ['clean']
-    ],
-  };
 
   return (
     <div className="min-h-screen bg-[#F6EEDF] flex flex-col md:flex-row">
@@ -193,17 +211,11 @@ const AdminDashboard = () => {
       {/* Sidebar Navigation */}
       <aside className="w-full md:w-64 bg-[#F8F1E4] border-r border-[#E6D7BD] p-5 flex flex-col justify-between shrink-0">
         <div>
-          {/* Logo Branding */}
           <div className="mb-8 pb-4 border-b border-[#E6D7BD]">
-            <h2 className="font-serif text-2xl font-bold text-[#3B6533]">
-              వసంతం
-            </h2>
-            <p className="font-sans text-xs text-[#A08530] font-medium tracking-wide">
-              ADMIN CONTROL PANEL
-            </p>
+            <h2 className="font-serif text-2xl font-bold text-[#3B6533]">వసంతం</h2>
+            <p className="font-sans text-xs text-[#A08530] font-medium tracking-wide">ADMIN CONTROL PANEL</p>
           </div>
 
-          {/* Navigation Links */}
           <nav className="flex flex-col gap-1.5">
             {navItems.map((item) => (
               <button
@@ -222,7 +234,6 @@ const AdminDashboard = () => {
           </nav>
         </div>
 
-        {/* Logout Button */}
         <div className="pt-4 border-t border-[#E6D7BD] mt-6">
           <button
             onClick={handleLogout}
@@ -236,16 +247,12 @@ const AdminDashboard = () => {
 
       {/* Main Content Workspace */}
       <main className="flex-grow p-6 md:p-10 max-w-5xl">
-        
-        {/* Top Action Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="font-serif text-2xl md:text-3xl font-bold text-[#3B6533] capitalize">
-              {activeTab === 'dashboard' ? 'డ్యాష్‌బోర్డ్ వివరణ' : activeTab}
+              {navItems.find(i => i.id === activeTab)?.label}
             </h1>
-            <p className="font-sans text-xs text-[#6C5338] mt-1">
-              రచయిత్రి: గీతా వసంత లక్ష్మి (వసంతం)
-            </p>
+            <p className="font-sans text-xs text-[#6C5338] mt-1">రచయిత్రి: గీతా వసంత లక్ష్మి (వసంతం)</p>
           </div>
 
           {activeTab !== 'dashboard' && (
@@ -259,98 +266,59 @@ const AdminDashboard = () => {
           )}
         </div>
 
-        {/* DASHBOARD OVERVIEW VIEW */}
+        {/* DASHBOARD OVERVIEW */}
         {activeTab === 'dashboard' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div 
-              onClick={() => setActiveTab('poems')}
-              className="bg-[#F8F1E4] p-6 rounded-2xl border border-[#E6D7BD] shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-            >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div onClick={() => setActiveTab('poems')} className="bg-[#F8F1E4] p-6 rounded-2xl border border-[#E6D7BD] shadow-sm hover:shadow-md cursor-pointer">
               <span className="text-3xl">📜</span>
               <h3 className="font-sans text-2xl font-bold text-[#3B6533] mt-3">{counts.poems}</h3>
               <p className="font-serif text-sm font-semibold text-[#5C4328]">కవితలు (Poems)</p>
             </div>
-
-            <div 
-              onClick={() => setActiveTab('writings')}
-              className="bg-[#F8F1E4] p-6 rounded-2xl border border-[#E6D7BD] shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-            >
+            <div onClick={() => setActiveTab('writings')} className="bg-[#F8F1E4] p-6 rounded-2xl border border-[#E6D7BD] shadow-sm hover:shadow-md cursor-pointer">
               <span className="text-3xl">✍️</span>
               <h3 className="font-sans text-2xl font-bold text-[#3B6533] mt-3">{counts.writings}</h3>
               <p className="font-serif text-sm font-semibold text-[#5C4328]">రచనలు (Writings)</p>
             </div>
-
-            <div 
-              onClick={() => setActiveTab('quotes')}
-              className="bg-[#F8F1E4] p-6 rounded-2xl border border-[#E6D7BD] shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-            >
+            <div onClick={() => setActiveTab('quotes')} className="bg-[#F8F1E4] p-6 rounded-2xl border border-[#E6D7BD] shadow-sm hover:shadow-md cursor-pointer">
               <span className="text-3xl">💬</span>
               <h3 className="font-sans text-2xl font-bold text-[#3B6533] mt-3">{counts.quotes}</h3>
-              <p className="font-serif text-sm font-semibold text-[#5C4328]">వ్యాఖ్యానాలు (Quotations)</p>
+              <p className="font-serif text-sm font-semibold text-[#5C4328]">వ్యాఖ్యానాలు (Commentary)</p>
             </div>
-
-            <div 
-              onClick={() => setActiveTab('akshara')}
-              className="bg-[#F8F1E4] p-6 rounded-2xl border border-[#E6D7BD] shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-            >
+            <div onClick={() => setActiveTab('akshara')} className="bg-[#F8F1E4] p-6 rounded-2xl border border-[#E6D7BD] shadow-sm hover:shadow-md cursor-pointer">
               <span className="text-3xl">🔤</span>
               <h3 className="font-sans text-2xl font-bold text-[#3B6533] mt-3">{counts.akshara}</h3>
               <p className="font-serif text-sm font-semibold text-[#5C4328]">అక్షరార్థం (Akshara)</p>
             </div>
           </div>
         ) : (
-          /* CONTENT LIST TAB VIEW */
+          /* CONTENT LIST */
           loading ? (
-            <div className="text-center py-16 text-[#5C4328] font-sans">
-              లోడ్ అవుతోంది...
-            </div>
+            <div className="text-center py-16 text-[#5C4328] font-sans">లోడ్ అవుతోంది...</div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
               {items.map((item) => (
-                <div 
-                  key={item._id}
-                  className="bg-[#F8F1E4] p-6 rounded-2xl border border-[#E6D7BD] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
-                >
+                <div key={item._id} className="bg-[#F8F1E4] p-6 rounded-2xl border border-[#E6D7BD] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-grow">
                     <div className="flex items-center gap-2 mb-1.5">
                       <span className={`text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full font-bold ${
-                        item.status === 'published' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-yellow-100 text-yellow-800'
+                        item.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                       }`}>
                         {item.status}
                       </span>
-                      {item.letter && (
-                        <span className="font-serif font-bold text-[#3B6533] text-sm">
-                          అక్షరం: {item.letter}
-                        </span>
-                      )}
                     </div>
 
                     <h3 className="font-serif text-lg font-bold text-[#4A3520]">
-                      {item.title || item.meaning || 'వ్యాఖ్యానం'}
+                      {item.title || 'వ్యాఖ్యానం'}
                     </h3>
                     
-                    {/* Content snippet */}
-                    <div 
-                      className="font-sans text-xs text-[#6C5338] line-clamp-2 mt-1"
-                      dangerouslySetInnerHTML={{ __html: item.content || item.text || item.description }}
-                    />
+                    <div className="font-sans text-xs text-[#6C5338] line-clamp-2 mt-1">
+                      {Array.isArray(item.content) ? item.content[0] : item.description}
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => handleOpenModal(item)}
-                      className="py-1.5 px-3.5 rounded-xl border border-[#D8C6A5] text-[#5C4328] text-xs font-semibold hover:bg-[#EFE3C9]"
-                    >
-                      సవరించు (Edit)
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item._id)}
-                      className="py-1.5 px-3.5 rounded-xl bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100"
-                    >
-                      తొలగించు (Delete)
-                    </button>
+                    <button onClick={() => handleOpenModal(item)} className="py-1.5 px-3.5 rounded-xl border border-[#D8C6A5] text-[#5C4328] text-xs font-semibold hover:bg-[#EFE3C9]">సవరించు (Edit)</button>
+                    <button onClick={() => handleDelete(item._id)} className="py-1.5 px-3.5 rounded-xl bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100">తొలగించు (Delete)</button>
                   </div>
                 </div>
               ))}
@@ -363,53 +331,23 @@ const AdminDashboard = () => {
             </div>
           )
         )}
-
       </main>
 
-      {/* Add / Edit Modal with ReactQuill Telugu Rich Text Editor */}
+      {/* Add / Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-[#F8F1E4] rounded-3xl max-w-2xl w-full p-6 md:p-8 border border-[#E6D7BD] shadow-2xl my-8">
-            
             <div className="flex justify-between items-center mb-6 pb-3 border-b border-[#E6D7BD]">
               <h3 className="font-serif text-xl font-bold text-[#3B6533]">
-                {editingItem ? 'సవరించండి (Edit Content)' : 'క్రొత్తది ప్రచురించు (Publish Content)'}
+                {editingItem ? 'సవరించండి (Edit)' : 'క్రొత్తది (Add New)'}
               </h3>
-              <button 
-                onClick={() => setShowModal(false)}
-                className="text-[#5C4328] hover:text-[#3B6533] text-lg font-bold"
-              >
-                ✕
-              </button>
+              <button onClick={() => setShowModal(false)} className="text-[#5C4328] hover:text-[#3B6533] text-lg font-bold">✕</button>
             </div>
 
             <form onSubmit={handleSave} className="flex flex-col gap-4">
-              {activeTab === 'akshara' ? (
-                <>
-                  <div>
-                    <label className="block text-xs font-semibold text-[#5C4328] mb-1">అక్షరం (Letter)</label>
-                    <input
-                      type="text"
-                      required
-                      value={letter}
-                      onChange={(e) => setLetter(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#D8C6A5] bg-[#FDF8EF] text-sm"
-                      placeholder="ఉదా: వ"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-[#5C4328] mb-1">అర్థం (Meaning)</label>
-                    <input
-                      type="text"
-                      required
-                      value={meaning}
-                      onChange={(e) => setMeaning(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#D8C6A5] bg-[#FDF8EF] text-sm"
-                      placeholder="ఉదా: వసంతం"
-                    />
-                  </div>
-                </>
-              ) : activeTab !== 'quotes' ? (
+              
+              {/* Common Title for Poems, Writings, Quotes, Akshara */}
+              {['poems', 'writings', 'quotes', 'akshara'].includes(activeTab) && (
                 <div>
                   <label className="block text-xs font-semibold text-[#5C4328] mb-1">శీర్షిక (Title)</label>
                   <input
@@ -418,60 +356,99 @@ const AdminDashboard = () => {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl border border-[#D8C6A5] bg-[#FDF8EF] text-sm"
-                    placeholder="శీర్షిక రాయండి..."
                   />
                 </div>
-              ) : null}
+              )}
 
-              {/* Rich Text Editor for Content */}
-              <div>
-                <label className="block text-xs font-semibold text-[#5C4328] mb-1">
-                  సాహిత్యం / వివరింపు (Telugu Content & Formatting)
-                </label>
-                <div className="bg-[#FDF8EF] rounded-xl overflow-hidden border border-[#D8C6A5]">
-                  <ReactQuill
-                    theme="snow"
+              {/* Text Area for Poems, Writings, Quotes */}
+              {['poems', 'writings', 'quotes'].includes(activeTab) && (
+                <div>
+                  <label className="block text-xs font-semibold text-[#5C4328] mb-1">
+                    సాహిత్యం (Content - ప్రతి లైన్ కి ఒక కొత్త లైన్ ఇవ్వండి)
+                  </label>
+                  <textarea
+                    required
                     value={content}
-                    onChange={setContent}
-                    modules={quillModules}
-                    placeholder="తెలుగులో టైప్ చేయండి లేదా పేస్ట్ చేయండి..."
-                    className="min-h-[180px] font-sans text-base"
+                    onChange={(e) => setContent(e.target.value)}
+                    rows={8}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#D8C6A5] bg-[#FDF8EF] text-sm"
+                    placeholder="పద్యం లేదా వ్యాసం ఇక్కడ రాయండి..."
                   />
                 </div>
-              </div>
+              )}
+
+              {/* Specifics for Akshara */}
+              {activeTab === 'akshara' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#5C4328] mb-1">వివరణ (Description - Optional)</label>
+                    <input
+                      type="text"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#D8C6A5] bg-[#FDF8EF] text-sm"
+                    />
+                  </div>
+                  
+                  <div className="bg-[#EFE3C9] p-4 rounded-xl border border-[#D8C6A5] space-y-3">
+                    <label className="block text-sm font-bold text-[#3B6533]">లైన్స్ (Lines)</label>
+                    {aksharaLines.map((line, idx) => (
+                      <div key={idx} className="flex gap-2 items-center">
+                        <input
+                          type="text"
+                          placeholder="అక్షరం"
+                          value={line.letter}
+                          onChange={(e) => handleAksharaLineChange(idx, 'letter', e.target.value)}
+                          className="w-1/3 px-3 py-2 rounded-lg border border-[#D8C6A5] text-sm"
+                        />
+                        <input
+                          type="text"
+                          required
+                          placeholder="అర్థం / వాక్యం"
+                          value={line.text}
+                          onChange={(e) => handleAksharaLineChange(idx, 'text', e.target.value)}
+                          className="w-2/3 px-3 py-2 rounded-lg border border-[#D8C6A5] text-sm"
+                        />
+                        <button type="button" onClick={() => handleRemoveAksharaLine(idx)} className="text-red-500 font-bold px-2">X</button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={handleAddAksharaLine} className="text-sm text-[#3B6533] font-bold">+ యాడ్ లైన్ (Add Line)</button>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#5C4328] mb-1">ఫుటర్ సందేశం (Footer Message - Optional)</label>
+                    <input
+                      type="text"
+                      value={footerMessage}
+                      onChange={(e) => setFooterMessage(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#D8C6A5] bg-[#FDF8EF] text-sm"
+                    />
+                  </div>
+                </>
+              )}
 
               <div>
-                <label className="block text-xs font-semibold text-[#5C4328] mb-1">ప్రచురణ స్థితి (Publish Status)</label>
+                <label className="block text-xs font-semibold text-[#5C4328] mb-1">ప్రచురణ స్థితి (Status)</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-[#D8C6A5] bg-[#FDF8EF] text-sm"
                 >
-                  <option value="published">ప్రచురించు (Publish Immediately)</option>
-                  <option value="draft">ముసాయిదా (Save as Draft)</option>
+                  <option value="published">ప్రచురించు (Publish)</option>
+                  <option value="draft">ముసాయిదా (Draft)</option>
                 </select>
               </div>
 
               <div className="flex items-center gap-3 mt-4 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-[#D8C6A5] text-[#5C4328] text-sm font-medium hover:bg-[#EFE3C9]"
-                >
-                  రద్దు (Cancel)
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-[#3B6533] text-[#F5EBDC] text-sm font-semibold hover:bg-[#2F5228] shadow-md"
-                >
-                  {editingItem ? 'సవరణ సేవ్‌ చేయి' : 'ప్రచురించు (Publish)'}
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-xl border border-[#D8C6A5] text-[#5C4328] text-sm font-medium hover:bg-[#EFE3C9]">రద్దు (Cancel)</button>
+                <button type="submit" className="flex-1 py-2.5 rounded-xl bg-[#3B6533] text-[#F5EBDC] text-sm font-semibold hover:bg-[#2F5228] shadow-md">
+                  {editingItem ? 'సేవ్‌ చేయి (Save)' : 'ప్రచురించు (Publish)'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-
     </div>
   );
 };

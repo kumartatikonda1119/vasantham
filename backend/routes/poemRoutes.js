@@ -53,11 +53,11 @@ router.put('/:id', protectAdmin, async (req, res) => {
     const poem = await Poem.findById(req.params.id);
     if (!poem) return res.status(404).json({ message: 'Poem not found' });
 
-    poem.title = req.body.title || poem.title;
-    poem.content = req.body.content || poem.content;
-    poem.category = req.body.category || poem.category;
-    poem.author = req.body.author || poem.author;
-    poem.status = req.body.status || poem.status;
+    if (req.body.title !== undefined) poem.title = req.body.title;
+    if (req.body.content !== undefined) poem.content = req.body.content;
+    if (req.body.category !== undefined) poem.category = req.body.category;
+    if (req.body.author !== undefined) poem.author = req.body.author;
+    if (req.body.status !== undefined) poem.status = req.body.status;
 
     const updatedPoem = await poem.save();
     res.json(updatedPoem);

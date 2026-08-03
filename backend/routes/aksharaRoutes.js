@@ -19,11 +19,12 @@ router.get('/', async (req, res) => {
 // @desc    Create Akshara Ardham entry (Admin)
 router.post('/', protectAdmin, async (req, res) => {
   try {
-    const { letter, meaning, description, status } = req.body;
+    const { title, description, footerMessage, lines, status } = req.body;
     const item = new AksharaArdham({
-      letter,
-      meaning,
+      title,
       description,
+      footerMessage,
+      lines,
       status: status || 'published',
     });
     const created = await item.save();
@@ -40,10 +41,11 @@ router.put('/:id', protectAdmin, async (req, res) => {
     const item = await AksharaArdham.findById(req.params.id);
     if (!item) return res.status(404).json({ message: 'Item not found' });
 
-    item.letter = req.body.letter || item.letter;
-    item.meaning = req.body.meaning || item.meaning;
-    item.description = req.body.description || item.description;
-    item.status = req.body.status || item.status;
+    if (req.body.title !== undefined) item.title = req.body.title;
+    if (req.body.description !== undefined) item.description = req.body.description;
+    if (req.body.footerMessage !== undefined) item.footerMessage = req.body.footerMessage;
+    if (req.body.lines !== undefined) item.lines = req.body.lines;
+    if (req.body.status !== undefined) item.status = req.body.status;
 
     const updated = await item.save();
     res.json(updated);

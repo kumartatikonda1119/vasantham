@@ -1,13 +1,17 @@
 const mongoose = require('mongoose');
 
 const quoteSchema = new mongoose.Schema({
-  text: {
+  title: {
     type: String,
+    required: true,
+  },
+  content: {
+    type: [String],
     required: true,
   },
   author: {
     type: String,
-    default: 'వసంతం',
+    default: 'Geeta Vasanta Laxmi (వసంతం)',
   },
   status: {
     type: String,

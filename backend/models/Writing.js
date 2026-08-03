@@ -7,7 +7,7 @@ const writingSchema = new mongoose.Schema({
     trim: true,
   },
   content: {
-    type: String,
+    type: [String],
     required: true,
   },
   category: {

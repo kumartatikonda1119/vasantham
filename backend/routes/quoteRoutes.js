@@ -19,10 +19,11 @@ router.get('/', async (req, res) => {
 // @desc    Create quote (Admin)
 router.post('/', protectAdmin, async (req, res) => {
   try {
-    const { text, author, status } = req.body;
+    const { title, content, author, status } = req.body;
     const quote = new Quote({
-      text,
-      author: author || 'వసంతం',
+      title,
+      content,
+      author: author || 'Geeta Vasanta Laxmi (వసంతం)',
       status: status || 'published',
     });
     const createdQuote = await quote.save();
@@ -39,9 +40,10 @@ router.put('/:id', protectAdmin, async (req, res) => {
     const quote = await Quote.findById(req.params.id);
     if (!quote) return res.status(404).json({ message: 'Quote not found' });
 
-    quote.text = req.body.text || quote.text;
-    quote.author = req.body.author || quote.author;
-    quote.status = req.body.status || quote.status;
+    if (req.body.title !== undefined) quote.title = req.body.title;
+    if (req.body.content !== undefined) quote.content = req.body.content;
+    if (req.body.author !== undefined) quote.author = req.body.author;
+    if (req.body.status !== undefined) quote.status = req.body.status;
 
     const updatedQuote = await quote.save();
     res.json(updatedQuote);

@@ -1,9 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ShareCardModal from '../components/ShareCardModal';
-import writingsData from '../data/writingsdata.json';
 
 const WritingsPage = () => {
   const [shareItem, setShareItem] = useState(null);
+  const [writingsData, setWritingsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/writings')
+      .then(res => res.json())
+      .then(data => {
+        setWritingsData(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching writings:', err);
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F6EEDF] py-10 px-4 md:px-8">
@@ -21,9 +35,11 @@ const WritingsPage = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-8">
-          {writingsData.map((item, index) => (
+          {loading ? (
+            <div className="text-center py-16 text-[#5C4328] font-sans">లోడ్ అవుతోంది... (Loading...)</div>
+          ) : writingsData.map((item, index) => (
             <div 
-              key={index}
+              key={item._id || index}
               className="bg-[#F8F1E4] p-8 rounded-3xl border border-[#E6D7BD] shadow-md flex flex-col justify-between"
             >
               <div>

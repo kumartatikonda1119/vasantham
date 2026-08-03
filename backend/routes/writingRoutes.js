@@ -53,11 +53,11 @@ router.put('/:id', protectAdmin, async (req, res) => {
     const writing = await Writing.findById(req.params.id);
     if (!writing) return res.status(404).json({ message: 'Writing not found' });
 
-    writing.title = req.body.title || writing.title;
-    writing.content = req.body.content || writing.content;
-    writing.category = req.body.category || writing.category;
-    writing.author = req.body.author || writing.author;
-    writing.status = req.body.status || writing.status;
+    if (req.body.title !== undefined) writing.title = req.body.title;
+    if (req.body.content !== undefined) writing.content = req.body.content;
+    if (req.body.category !== undefined) writing.category = req.body.category;
+    if (req.body.author !== undefined) writing.author = req.body.author;
+    if (req.body.status !== undefined) writing.status = req.body.status;
 
     const updatedWriting = await writing.save();
     res.json(updatedWriting);

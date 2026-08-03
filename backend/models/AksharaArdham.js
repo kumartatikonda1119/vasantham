@@ -1,18 +1,22 @@
 const mongoose = require('mongoose');
 
+const lineSchema = new mongoose.Schema({
+  letter: { type: String },
+  text: { type: String, required: true }
+}, { _id: false });
+
 const aksharaArdhamSchema = new mongoose.Schema({
-  letter: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  meaning: {
+  title: {
     type: String,
     required: true,
   },
   description: {
     type: String,
   },
+  footerMessage: {
+    type: String,
+  },
+  lines: [lineSchema],
   status: {
     type: String,
     enum: ['published', 'draft'],
