@@ -17,8 +17,8 @@ connectDB();
 // Middleware
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://vasanthambackend.onrender.com', // Added Render URL per your request
-  'https://vasantham.vercel.app' // Just in case you deploy frontend to Vercel
+  'https://vasantham.onrender.com',
+  'https://vasanthambackend.onrender.com'
 ];
 
 app.use(cors({
@@ -28,7 +28,8 @@ app.use(cors({
     } else {
       callback(new Error('Not allowed by CORS'));
     }
-  }
+  },
+  credentials: true
 }));
 app.use(express.json());
 
