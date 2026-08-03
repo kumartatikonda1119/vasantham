@@ -45,10 +45,10 @@ const AdminDashboard = () => {
   const fetchDashboardCounts = async () => {
     try {
       const [poemsRes, writingsRes, quotesRes, aksharaRes] = await Promise.all([
-        fetch('http://localhost:5000/api/poems?all=true'),
-        fetch('http://localhost:5000/api/writings?all=true'),
-        fetch('http://localhost:5000/api/quotes?all=true'),
-        fetch('http://localhost:5000/api/akshara?all=true'),
+        fetch('https://vasanthambackend.onrender.com/api/poems?all=true'),
+        fetch('https://vasanthambackend.onrender.com/api/writings?all=true'),
+        fetch('https://vasanthambackend.onrender.com/api/quotes?all=true'),
+        fetch('https://vasanthambackend.onrender.com/api/akshara?all=true'),
       ]);
 
       const [poems, writings, quotes, akshara] = await Promise.all([
@@ -71,11 +71,11 @@ const AdminDashboard = () => {
 
   const getEndpoint = () => {
     switch (activeTab) {
-      case 'poems': return 'http://localhost:5000/api/poems';
-      case 'writings': return 'http://localhost:5000/api/writings';
-      case 'quotes': return 'http://localhost:5000/api/quotes';
-      case 'akshara': return 'http://localhost:5000/api/akshara';
-      default: return 'http://localhost:5000/api/poems';
+      case 'poems': return 'https://vasanthambackend.onrender.com/api/poems';
+      case 'writings': return 'https://vasanthambackend.onrender.com/api/writings';
+      case 'quotes': return 'https://vasanthambackend.onrender.com/api/quotes';
+      case 'akshara': return 'https://vasanthambackend.onrender.com/api/akshara';
+      default: return 'https://vasanthambackend.onrender.com/api/poems';
     }
   };
 

@@ -7,7 +7,7 @@ const PoemsPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/poems')
+    fetch('https://vasanthambackend.onrender.com/api/poems')
       .then(res => res.json())
       .then(data => {
         setPoemsData(Array.isArray(data) ? data : []);

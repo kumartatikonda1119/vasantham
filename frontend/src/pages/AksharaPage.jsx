@@ -5,7 +5,7 @@ const AksharaPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/akshara')
+    fetch('https://vasanthambackend.onrender.com/api/akshara')
       .then(res => res.json())
       .then(data => {
         setAksharaData(Array.isArray(data) ? data : []);

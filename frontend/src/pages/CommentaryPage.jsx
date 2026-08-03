@@ -7,7 +7,7 @@ const CommentaryPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/quotes')
+    fetch('https://vasanthambackend.onrender.com/api/quotes')
       .then(res => res.json())
       .then(data => {
         setCommentaryData(Array.isArray(data) ? data : []);
